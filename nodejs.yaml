@@ -11,6 +11,6 @@ spec:
     spec:
       containers:
       - name: nodejs
-        image: gcr.io/kents-core/nodejs-sample:v1
+        image: gcr.io/kenthua-core/nodejs-sample:v1
         ports:
         - containerPort: 8080
