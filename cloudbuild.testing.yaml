@@ -1,0 +1,40 @@
+steps:
+- name: gcr.io/cloud-builders/gcloud
+  args:
+  - kms
+  - decrypt
+  - --ciphertext-file=secrets.json.enc
+  - --plaintext-file=secrets.json
+  - --location=global
+  - --keyring=cbtest
+  - --key=cbtestkey
+- name: 'ubuntu'
+  entrypoint: 'bash'
+  args: ['-c', 'echo $$MY_SECRET']
+  secretEnv: ['MY_SECRET']
+- name: 'gcr.io/cloud-builders/java/mvn'
+  args: ['package']
+- name: 'ubuntu'
+  entrypoint: 'bash'
+  args: ['-c', 'echo hello > /foo/hello.txt']
+  volumes:
+  - name: 'my-volume'
+    path: '/foo'
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['run', 'busybox', 'echo', 'Hello, world!']
+- name: 'busybox'
+  args: ['ls', '/']
+- name: 'busybox'
+  args: ['cat', 'secrets.json']
+- name: 'busybox'
+  args: ['cat', '/foo/hello.txt']
+  volumes:
+  - name: 'my-volume'
+    path: '/foo'
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '--tag=gcr.io/$PROJECT_ID/spring-boot', '.']
+secrets:
+- kmsKeyName: projects/kenthua-istio/locations/global/keyRings/cbtest/cryptoKeys/cbtestkey
+  secretEnv:
+    MY_SECRET: CiQAWtb63hyKLmbM/GYG1qqKWF9qxVJ1JVdGQeiDWPYjPEL9MqESMQCKj/AANz9Fb/+2J9Lbf+bfYAQGSzgymZwsY3knVBkH5VQXju4d1+bLEhTNS8HML+8=
+images: ['gcr.io/$PROJECT_ID/spring-boot']
